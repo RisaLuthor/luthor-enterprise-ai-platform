@@ -1,4 +1,4 @@
-name: CI
+name: SBOM
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  test:
+  sbom:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,16 +19,17 @@ jobs:
           python-version: "3.12"
           cache: "pip"
 
-      - name: Install deps
+      - name: Install cyclonedx-bom
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e .
-          python -m pip install pytest
+          python -m pip install cyclonedx-bom
 
-      - name: Lint importability (compile)
+      - name: Generate SBOM (CycloneDX JSON)
         run: |
-          python -m compileall -q src
+          cyclonedx-py -o sbom.cdx.json
 
-      - name: Run tests
-        run: |
-          python -m pytest -q
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-cyclonedx
+          path: sbom.cdx.json
