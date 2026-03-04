@@ -2,7 +2,8 @@ name: SBOM
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   pull_request:
 
 permissions:
@@ -11,14 +12,15 @@ permissions:
 jobs:
   sbom:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-          cache: "pip"
+          cache: pip
 
       - name: Install SBOM tool
         run: |
@@ -30,7 +32,6 @@ jobs:
           if [ -f requirements.txt ]; then
             cyclonedx-py requirements -i requirements.txt -o sbom.cdx.json
           else
-            # If you're using pyproject/poetry-style deps, this is the correct generator:
             cyclonedx-py poetry -o sbom.cdx.json
           fi
 
