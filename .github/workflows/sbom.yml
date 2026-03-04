@@ -12,28 +12,25 @@ permissions:
 jobs:
   sbom:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
+      - name: Checkout repo
         uses: actions/checkout@v4
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-          cache: pip
 
-      - name: Install SBOM tool
+      - name: Install project + SBOM tool
         run: |
           python -m pip install --upgrade pip
+          python -m pip install -e .
           python -m pip install cyclonedx-bom
 
-      - name: Generate SBOM (CycloneDX)
+      - name: Generate SBOM
         run: |
-          if [ -f requirements.txt ]; then
-            cyclonedx-py requirements -i requirements.txt -o sbom.cdx.json
-          else
-            cyclonedx-py poetry -o sbom.cdx.json
-          fi
+          cyclonedx-py environment -o sbom.cdx.json
 
       - name: Upload SBOM artifact
         uses: actions/upload-artifact@v4
