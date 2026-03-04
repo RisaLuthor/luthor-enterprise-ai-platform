@@ -11,6 +11,7 @@ permissions:
 jobs:
   sbom:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -19,15 +20,19 @@ jobs:
           python-version: "3.12"
           cache: "pip"
 
-      - name: Install cyclonedx-bom
+      - name: Install SBOM tool
         run: |
           python -m pip install --upgrade pip
           python -m pip install cyclonedx-bom
 
-      -       - name: Generate SBOM (CycloneDX)
+      - name: Generate SBOM (CycloneDX)
         run: |
-          pip install cyclonedx-bom
-          cyclonedx-py pyproject -o sbom.cdx.json
+          if [ -f requirements.txt ]; then
+            cyclonedx-py requirements -i requirements.txt -o sbom.cdx.json
+          else
+            # If you're using pyproject/poetry-style deps, this is the correct generator:
+            cyclonedx-py poetry -o sbom.cdx.json
+          fi
 
       - name: Upload SBOM artifact
         uses: actions/upload-artifact@v4
